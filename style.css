@@ -1,0 +1,658 @@
+/* ============================================
+STYLE.CSS — Автономные стили калькулятора
+Извлечено из sections.css (СЕКЦИЯ 6)
+============================================ */
+
+/* REQUIRED VARIABLES
+   Дублируем только те переменные, которые
+   реально используются калькулятором.        */
+:root {
+  --color-green:       #3A7D2C;
+  --color-green-soft:  #E8F2E0;
+  --color-green-light: #6DBF5A;
+  --color-gold:        #C9A961;
+  --color-gold-dark:   #A68A3E;
+  --color-gold-light:  #E2CFA0;
+  --color-cream:       #F5F1E8;
+  --color-cream-dark:  #E4DCCB;
+  --color-graphite:    #1A1A1A;
+
+  --text:              #1A1A1A;
+  --text-muted:        #6B6B6B;
+  --surface:           #FFFFFF;
+  --border:            #E0DAD0;
+  --bg-alt:            #F0EDE5;
+
+  --radius-md:   10px;
+  --radius-lg:   16px;
+  --radius-xl:   24px;
+  --radius-pill: 100px;
+
+  --shadow-sm: 0 1px 4px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.10);
+  --shadow-lg: 0 12px 40px rgba(0,0,0,0.14);
+  --shadow-gold: 0 0 0 3px rgba(201,169,97,0.25);
+
+  --font-display: 'Playfair Display', Georgia, 'Times New Roman', serif;
+  --font-body:    'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  --section-py: 5rem;
+}
+
+/* ============================================
+   БАЗОВЫЙ СБРОС (минимальный, только для
+   автономной работы калькулятора)
+============================================ */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--text);
+  background: var(--color-cream);
+  -webkit-font-smoothing: antialiased;
+}
+
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.section {
+  padding: var(--section-py) 0;
+}
+
+/* ============================================
+   КНОПКИ (используются внутри итога)
+============================================ */
+.btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.9rem 1.75rem;
+  border: 2px solid transparent;
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  overflow: hidden;
+  transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease, transform 0.2s ease;
+}
+
+.btn--shimmer {
+  background: var(--color-gold);
+  color: var(--color-graphite);
+  width: 100%;
+}
+.btn--shimmer:hover {
+  background: var(--color-gold-dark);
+}
+.btn--shimmer::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -60%;
+  width: 50%;
+  background: linear-gradient(105deg, transparent, rgba(255,255,255,0.55), transparent);
+  transform: skewX(-20deg) translateX(0);
+  transition: transform 0.7s ease;
+  pointer-events: none;
+}
+.btn--shimmer:hover::before {
+  transform: skewX(-20deg) translateX(320%);
+}
+
+.btn--outline {
+  background: transparent;
+  border-color: rgba(245,241,232,0.5);
+  color: var(--color-cream);
+  width: 100%;
+}
+.btn--outline:hover {
+  background: rgba(245,241,232,0.12);
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ============================================
+   СЕКЦИЯ: КАЛЬКУЛЯТОР
+============================================ */
+.calc {
+  background: linear-gradient(180deg, var(--color-cream) 0%, #ffffff 50%, var(--color-cream) 100%);
+}
+
+.calc__grid {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 3rem;
+  align-items: start;
+}
+
+/* ---------- Форма ---------- */
+.calc__form {
+  display: flex;
+  flex-direction: column;
+  gap: 2.25rem;
+  padding: 2.5rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-md);
+}
+
+.calc__step {
+  border: 0;
+  padding: 0;
+  margin: 0;
+}
+
+.calc__step-title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.calc__step-num {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--color-green);
+  color: var(--color-cream);
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+/* ---------- Шаг 1: площадь ---------- */
+.calc__area {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.calc__range {
+  flex: 1;
+  min-width: 200px;
+  height: 6px;
+  border-radius: 3px;
+  appearance: none;
+  -webkit-appearance: none;
+  background: linear-gradient(90deg, var(--color-green) var(--range-progress, 5%), var(--color-cream-dark) var(--range-progress, 5%));
+  outline: none;
+  cursor: pointer;
+}
+.calc__range::-webkit-slider-thumb {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--color-gold);
+  border: 3px solid #ffffff;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.2s ease;
+}
+.calc__range::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+}
+.calc__range::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--color-gold);
+  border: 3px solid #ffffff;
+  box-shadow: var(--shadow-sm);
+}
+
+.calc__area-input {
+  position: relative;
+  width: 160px;
+}
+.calc__area-input .calc__input {
+  padding-right: 3rem;
+}
+.calc__unit {
+  position: absolute;
+  top: 50%;
+  right: 1rem;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  pointer-events: none;
+}
+
+.calc__input {
+  width: 100%;
+  padding: 0.8rem 1rem;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  background: #ffffff;
+  font-family: var(--font-body);
+  font-size: 1rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.calc__input:focus {
+  outline: none;
+  border-color: var(--color-gold);
+  box-shadow: 0 0 0 3px rgba(201,169,97,0.25);
+}
+.calc__input.is-error {
+  border-color: #D94F4F;
+  box-shadow: 0 0 0 3px rgba(217,79,79,0.2);
+}
+
+/* ---------- Визуализация участка ---------- */
+.calc__viz {
+  margin-top: 1.5rem;
+  padding: 1.25rem;
+  border-radius: var(--radius-md);
+  background: linear-gradient(180deg, #DCE8D2 0%, #C9D8BC 100%);
+  overflow: hidden;
+}
+
+.calc__plot {
+  position: relative;
+  width: 40%;
+  height: 120px;
+  margin: 0 auto;
+  transition: width 0.4s ease;
+}
+
+.calc__plot-soil {
+  position: absolute;
+  inset: 0;
+  border-radius: 8px;
+  background: linear-gradient(180deg, #7A5B3A, #4A3521);
+}
+
+.calc__plot.is-soil-removal .calc__plot-soil {
+  animation: soil-lift 2s ease-in-out;
+}
+
+@keyframes soil-lift {
+  0%   { transform: translateY(0); opacity: 1; }
+  50%  { transform: translateY(-14px); opacity: 0.6; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+.calc__plot-grass {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -10px;
+  height: 14px;
+  border-radius: 7px;
+  background: linear-gradient(90deg, #57923A, #2D5016);
+  opacity: 0;
+  transform: scaleY(0);
+  transform-origin: bottom;
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.calc__plot.is-grass .calc__plot-grass {
+  opacity: 1;
+  transform: scaleY(1);
+}
+
+.calc__plot-drainage {
+  position: absolute;
+  inset: 0;
+  border-radius: 8px;
+  background-image: repeating-linear-gradient(90deg, transparent 0 18px, rgba(255,255,255,0.35) 18px 20px);
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+.calc__plot.is-drainage .calc__plot-drainage {
+  opacity: 1;
+}
+
+/* Мини-объекты визуализации */
+.calc__plot-machine,
+.calc__plot-trees,
+.calc__plot-worker,
+.calc__plot-water {
+  position: absolute;
+  opacity: 0;
+  transition: opacity 0.4s ease, transform 0.4s ease;
+  pointer-events: none;
+}
+
+.calc__plot-machine {
+  top: -34px;
+  left: -15%;
+  width: 56px;
+  color: var(--color-graphite);
+}
+.calc__plot.is-leveling .calc__plot-machine {
+  opacity: 1;
+  animation: machine-roll 2s linear;
+}
+
+@keyframes machine-roll {
+  0%   { left: -15%; }
+  100% { left: 105%; }
+}
+
+.calc__plot-trees {
+  top: -40px;
+  right: 8px;
+  width: 64px;
+  color: var(--color-green);
+  transform: translateY(-24px);
+}
+.calc__plot.is-trees .calc__plot-trees {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.calc__plot-worker {
+  top: -40px;
+  left: 12px;
+  width: 34px;
+  color: var(--color-graphite);
+}
+.calc__plot.is-worker .calc__plot-worker {
+  opacity: 1;
+}
+
+.calc__plot-water {
+  top: -26px;
+  left: 0;
+  right: 0;
+  height: 30px;
+  color: #4FA3D9;
+}
+.calc__plot.is-water .calc__plot-water {
+  opacity: 1;
+  animation: water-fall 1.6s ease-in-out infinite;
+}
+
+@keyframes water-fall {
+  0%, 100% { transform: translateY(0); opacity: 0.9; }
+  50%      { transform: translateY(6px); opacity: 0.5; }
+}
+
+/* ---------- Шаг 2: плитки типа газона ---------- */
+.calc__tiles {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.9rem;
+}
+
+.calc__tile {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.9rem 1rem;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  background: #ffffff;
+  text-align: left;
+  cursor: pointer;
+  font-family: var(--font-body);
+  transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
+}
+.calc__tile-name {
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+.calc__tile-price {
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+}
+.calc__tile:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-sm);
+}
+.calc__tile.is-active {
+  border-color: var(--color-gold);
+  box-shadow: 0 0 0 3px rgba(201,169,97,0.2);
+}
+
+/* ---------- Чекбоксы (шаги 3 и 5) ---------- */
+.calc__checks {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.calc__check {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 0.9rem 1.1rem;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  background: #ffffff;
+  cursor: pointer;
+  transition: border-color 0.25s ease;
+}
+.calc__check:hover {
+  border-color: var(--color-green-light);
+}
+.calc__check:has(.calc__check-input:checked) {
+  border-color: var(--color-green);
+}
+
+.calc__check-input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+}
+
+.calc__box {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border: 1.5px solid var(--border);
+  border-radius: 6px;
+  background: #ffffff;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+.calc__box svg {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: #ffffff;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 24;
+  stroke-dashoffset: 24;
+  transition: stroke-dashoffset 0.35s ease;
+}
+.calc__check-input:checked + .calc__box {
+  background: var(--color-green);
+  border-color: var(--color-green);
+}
+.calc__check-input:checked + .calc__box svg {
+  stroke-dashoffset: 0;
+}
+.calc__check-input:focus-visible + .calc__box {
+  outline: 2px solid var(--color-gold);
+  outline-offset: 2px;
+}
+
+.calc__check-text {
+  flex: 1;
+  font-size: 0.9375rem;
+  font-weight: 500;
+}
+.calc__check-price {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-gold-dark);
+}
+
+/* ---------- Шаг 4: select района ---------- */
+.calc__select-wrap {
+  position: relative;
+}
+.calc__select {
+  width: 100%;
+  padding: 0.9rem 2.8rem 0.9rem 1.1rem;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  background: #ffffff;
+  font-family: var(--font-body);
+  font-size: 1rem;
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.calc__select:focus {
+  outline: none;
+  border-color: var(--color-gold);
+  box-shadow: 0 0 0 3px rgba(201,169,97,0.25);
+}
+.calc__select-icon {
+  position: absolute;
+  top: 50%;
+  right: 1rem;
+  transform: translateY(-50%);
+  width: 18px;
+  height: 18px;
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+/* ---------- Итоговый блок (sticky) ---------- */
+.calc__total {
+  position: sticky;
+  top: 110px;
+  padding: 2.25rem;
+  border-radius: var(--radius-xl);
+  background: var(--color-green);
+  color: var(--color-cream);
+  box-shadow: var(--shadow-lg);
+}
+
+.calc__total.is-pulse {
+  animation: total-pulse 0.45s ease;
+}
+
+@keyframes total-pulse {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.02); }
+  100% { transform: scale(1); }
+}
+
+.calc__total-title {
+  margin-bottom: 0.75rem;
+  font-family: var(--font-body);
+  font-size: 1.0625rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity: 0.85;
+}
+
+.calc__total-value {
+  margin-bottom: 1.5rem;
+  font-family: var(--font-display);
+  font-size: clamp(2.25rem, 4vw, 3rem);
+  font-weight: 700;
+  line-height: 1;
+  color: var(--color-gold-light);
+}
+
+.calc__breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-bottom: 1.75rem;
+  font-size: 0.9375rem;
+  list-style: none;
+}
+.calc__breakdown li {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid rgba(245,241,232,0.18);
+}
+.calc__breakdown li span:first-child {
+  opacity: 0.8;
+}
+.calc__breakdown-total {
+  padding-bottom: 0;
+  border-bottom: 0;
+  font-size: 1.0625rem;
+  font-weight: 700;
+}
+.calc__breakdown-total span:first-child {
+  opacity: 1;
+}
+
+.calc__total .btn--outline {
+  border-color: rgba(245,241,232,0.5);
+  color: var(--color-cream);
+}
+.calc__total .btn--outline:hover {
+  background: rgba(245,241,232,0.12);
+}
+
+.calc__note {
+  margin-top: 0.6rem;
+  font-size: 0.8125rem;
+  text-align: center;
+  opacity: 0.75;
+}
+
+.calc__pdf {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-top: 1.25rem;
+}
+
+.calc__input--mail {
+  background: rgba(255,255,255,0.95);
+}
+
+/* ============================================
+   АДАПТИВ
+============================================ */
+@media (max-width: 1024px) {
+  .calc__grid {
+    grid-template-columns: 1fr;
+  }
+  .calc__total {
+    position: static;
+  }
+}
+
+@media (max-width: 640px) {
+  .calc__form {
+    padding: 1.75rem;
+  }
+  .calc__tiles {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
