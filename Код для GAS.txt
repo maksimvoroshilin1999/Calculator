@@ -1,0 +1,109 @@
+function doPost(e) {
+  var log = []; 
+  try {
+    var data = JSON.parse(e.postData.contents);
+    
+    // --- 1. Создаем временный документ ---
+    var doc = DocumentApp.create('KP_Temp_' + new Date().getTime());
+    var body = doc.getBody();
+    body.setMarginTop(30).setMarginBottom(30).setMarginLeft(40).setMarginRight(40);
+    
+    var title = body.appendParagraph('КОММЕРЧЕСКОЕ ПРЕДЛОЖЕНИЕ');
+    title.setHeading(DocumentApp.ParagraphHeading.HEADING1);
+    title.setAlignment(DocumentApp.HorizontalAlignment.CENTER).setFontFamily('Arial');
+    
+    var dateStr = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'dd.MM.yyyy');
+    var header = body.appendParagraph('Дата: ' + dateStr + ' | Компания: ' + (data.company || 'Петербургские газоны'));
+    header.setFontSize(10).setFontFamily('Arial').setAlignment(DocumentApp.HorizontalAlignment.RIGHT);
+    
+    body.appendParagraph(' '); 
+    body.appendHorizontalRule();
+    body.appendParagraph(' ');
+    
+    body.appendParagraph('Уважаемый клиент!').setBold(true).setFontFamily('Arial');
+    body.appendParagraph('Благодарим за интерес к нашим услугам. Ниже представлен расчет стоимости работ:')
+        .setFontFamily('Arial').setFontSize(11);
+    body.appendParagraph(' ');
+    
+    // --- 2. Таблица с услугами ---
+    var servicesArray = data.services.split('\n');
+    var tableData = [['№', 'Наименование услуги', 'Стоимость']];
+    
+    for (var i = 0; i < servicesArray.length; i++) {
+      var line = servicesArray[i].trim();
+      if (line === '') continue;
+      var parts = line.split(' — ');
+      tableData.push([(i + 1).toString(), parts[0], parts.length > 1 ? parts[1] : '']);
+    }
+    
+    var table = body.appendTable(tableData);
+    // Убрали table.setWidth(100), так как в GAS этого метода нет. Таблица сама займет нужную ширину.
+    
+    for (var r = 0; r < table.getNumRows(); r++) {
+      var row = table.getRow(r);
+      for (var c = 0; c < row.getNumCells(); c++) {
+        var cell = row.getCell(c);
+        cell.setPaddingTop(5).setPaddingBottom(5).setPaddingLeft(5).setPaddingRight(5);
+        var p = cell.getChild(0).asParagraph();
+        p.setFontFamily('Arial').setFontSize(10);
+        if (r === 0) p.setBold(true); 
+        if (c === 0) p.setAlignment(DocumentApp.HorizontalAlignment.CENTER); 
+        if (c === 2) p.setAlignment(DocumentApp.HorizontalAlignment.RIGHT); 
+      }
+    }
+    
+    body.appendParagraph(' ');
+    var totalPar = body.appendParagraph('ИТОГО: ' + data.total);
+    totalPar.setBold(true).setFontSize(14).setFontFamily('Arial').setAlignment(DocumentApp.HorizontalAlignment.RIGHT);
+    
+    doc.saveAndClose();
+    log.push("Документ создан");
+    
+    // --- 3. Сохранение в Таблицу (База данных) ---
+    var files = DriveApp.getFilesByName("Заявки с калькулятора"); 
+    if (files.hasNext()) {
+      var ss = SpreadsheetApp.open(files.next());
+      var sheet = ss.getSheets()[0];
+      sheet.appendRow([new Date(), data.email, data.services, data.total]);
+      log.push("Записано в таблицу");
+    } else {
+      log.push("ОШИБКА: Таблица 'Заявки с калькулятора' не найдена на Диске");
+    }
+    
+    // --- 4. Конвертация в PDF ---
+    var docFile = DriveApp.getFileById(doc.getId());
+    var pdfBlob = docFile.getAs('application/pdf');
+    pdfBlob.setName('КП_Петербургские_газоны.pdf');
+    log.push("PDF сгенерирован");
+    
+    // --- 5. Отправка клиенту ---
+    MailApp.sendEmail({
+      to: data.email,
+      subject: 'Коммерческое предложение от ' + (data.company || 'Петербургские газоны'),
+      body: 'Здравствуйте!\n\nВо вложении находится коммерческое предложение.\n\nИтого: ' + data.total + '\n\nС уважением,\nКоманда «Петербургские газоны»',
+      attachments: [pdfBlob]
+    });
+    log.push("Письмо клиенту отправлено");
+    
+    // --- 6. Отправка менеджеру (ВАШ EMAIL) ---
+    MailApp.sendEmail({
+      to: 'maksimvoroshilin1999@gmail.com', 
+      subject: 'Новая заявка на смету!',
+      body: 'Клиент: ' + data.email + '\n\nУслуги:\n' + data.services + '\n\nИтого: ' + data.total
+    });
+    log.push("Уведомление менеджеру отправлено");
+    
+    // --- 7. Очистка (удаление временного файла) ---
+    docFile.setTrashed(true); 
+    log.push("Временный файл удален");
+    
+    return ContentService.createTextOutput(JSON.stringify({ status: 'ok', log: log })).setMimeType(ContentService.MimeType.JSON);
+    
+  } catch (error) {
+    return ContentService.createTextOutput(JSON.stringify({ 
+      status: 'error', 
+      message: error.toString(),
+      log: log 
+    })).setMimeType(ContentService.MimeType.JSON);
+  }
+}
